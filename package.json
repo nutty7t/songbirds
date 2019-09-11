@@ -4,8 +4,10 @@
   "description": "js13kGames Competition Entry (2019)",
   "main": "index.js",
   "scripts": {
-    "dev": "webpack-dev-server --env.development",
-    "build": "webpack --env.production --progress && zip -r submission.zip dist/"
+    "install": "make install",
+    "serve": "make serve",
+    "build": "make build",
+    "clean": "make clean"
   },
   "author": "ナッティ (nutty7t)",
   "license": "MIT",
