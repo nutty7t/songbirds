@@ -36,7 +36,15 @@ module.exports = (env) => {
   } else {
     return Object.assign(config, {
       mode: 'development',
-      devtool: 'inline-source-map'
+      devtool: 'inline-source-map',
+      devServer: {
+        contentBase: path.join(__dirname, 'dist'),
+        disableHostCheck: true,
+        watchContentBase: true,
+        host: '0.0.0.0',
+        port: 4000,
+        hot: true
+      }
     })
   }
 }
