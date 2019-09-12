@@ -97,7 +97,7 @@ function generateChordProgression(mode: Mode, n: number): Array<number> {
   let matrix = stochasticMatrices[mode]
 
   // Step through the Markov chain.
-  for (let c = 1; c < length; c++) {
+  for (let c = 1; c < n; c++) {
     const selection = Math.random()
     let probabilityBound = 0.00
     for (let nc = 0; nc < matrix[currentChord].length; nc++) {
@@ -226,6 +226,42 @@ function isBassRange ({ midiNumber }: Note): boolean {
   return midiNumber >= 40 && midiNumber <= 60
 }
 
-function generateMelody (key: PitchClass, chords: Array<number>): Array<number> {
-  return null
+function isInChord (chord: Array<number>) {
+  return function ({ pitchClass }: Note): boolean {
+    return chord.includes(pitchClass)
+  }
 }
+
+function pickRandomNote (notes: Array<Note>): Note {
+  const randomIndex = Math.floor(Math.random() * notes.length)
+  return notes[randomIndex]
+}
+
+function generateMelody (key: PitchClass, mode: Mode, chordProgression: Array<number>): Array<Note> {
+  // Generate the first note of the melody.
+  const firstChord = spellChord(key, mode, chordProgression.pop())
+  const firstNoteCandidates = Object.values(notes)
+    .filter(isSopranoRange)
+    .filter(isInChord(firstChord))
+  const firstNote = pickRandomNote(firstNoteCandidates)
+  const melody = [firstNote]
+  const lastNote = firstNote
+
+  // Generate the rest of the notes (one per chord).
+  while (chordProgression.length > 0) {
+    const nextChord = chordProgression.pop()
+    const candidates = Object.values(notes)
+      .filter(isSopranoRange)
+      .filter(isInChord(spellChord(key, mode, nextChord)))
+      .filter((note: Note) => {
+        // No leaps greater than a perfect fourth.
+        return Math.abs(note.midiNumber - lastNote.midiNumber) <= 5
+      })
+    melody.push(pickRandomNote(candidates))
+  }
+
+  return melody
+}
+
+console.log(generateMelody(PitchClass.C, Mode.Major, generateChordProgression(Mode.Major, 7)))
+
