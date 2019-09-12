@@ -19,6 +19,6 @@ make serve PROXY_ORIGIN=https://songbirds.nutty.dev:80
 
 ``` sh
 # Build, minify, and zip everything up for submission!
-# Output: submission.zip
+# Output: build/submission.zip
 make build
 ```
