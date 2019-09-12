@@ -206,6 +206,26 @@ function spellChord (key: PitchClass, mode: Mode, chord: MajorChord | MinorChord
   return spelling
 }
 
-function generateMelody (key: PitchClass, chords: Array<number>) {
-  // TODO implement function
+function isSopranoRange ({ midiNumber }: Note): boolean {
+  // C4 -> G5: the graphical piano is two octaves (C4 -> C6).
+  return midiNumber >= 60 && midiNumber <= 79
+}
+
+function isAltoRange ({ midiNumber }: Note): boolean {
+  // G3 -> D5
+  return midiNumber >= 55 && midiNumber <= 74
+}
+
+function isTenorRange ({ midiNumber }: Note): boolean {
+  // C3 -> G4
+  return midiNumber >= 48 && midiNumber <= 67
+}
+
+function isBassRange ({ midiNumber }: Note): boolean {
+  // E2 -> C4
+  return midiNumber >= 40 && midiNumber <= 60
+}
+
+function generateMelody (key: PitchClass, chords: Array<number>): Array<number> {
+  return null
 }
