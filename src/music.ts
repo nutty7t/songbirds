@@ -257,7 +257,8 @@ function pickRandomNote (notes: Array<Note>): Note {
 
 function generateMelody (key: PitchClass, mode: Mode, chordProgression: Array<number>): Array<Note | Array<Note>> {
   // Generate the first note of the melody.
-  const firstChord = spellChord(key, mode, chordProgression.pop())
+  const chords = [...chordProgression]
+  const firstChord = spellChord(key, mode, chords.pop())
   const firstNoteCandidates = Object.values(notes)
     .filter(inRange(Voice.Soprano))
     .filter(isInChord(firstChord))
@@ -266,8 +267,8 @@ function generateMelody (key: PitchClass, mode: Mode, chordProgression: Array<nu
   const lastNote = firstNote
 
   // Generate the rest of the notes (one per chord).
-  while (chordProgression.length > 0) {
-    const nextChord = chordProgression.pop()
+  while (chords.length > 0) {
+    const nextChord = chords.pop()
     const candidates = Object.values(notes)
       .filter(inRange(Voice.Soprano))
       .filter(isInChord(spellChord(key, mode, nextChord)))
@@ -413,5 +414,27 @@ function generateHarmony (key: PitchClass, mode: Mode, chordProgression: Array<n
   }
 }
 
-console.log(generateMelody(PitchClass.C, Mode.Major, generateChordProgression(Mode.Major, 7)))
-console.log(generateHarmony(PitchClass.C, Mode.Major, generateChordProgression(Mode.Major, 7)))
+// https://stackoverflow.com/a/55699349
+function randomEnum<T>(anEnum: T): T[keyof T] {
+  const enumValues = Object.keys(anEnum)
+    .map(n => Number.parseInt(n))
+    .filter(n => !Number.isNaN(n)) as unknown as T[keyof T][]
+  const randomIndex = Math.floor(Math.random() * enumValues.length)
+  const randomEnumValue = enumValues[randomIndex]
+  return randomEnumValue;
+}
+
+export function generateSong () {
+  do {
+    var keySignature = randomEnum(PitchClass)
+    var mode = (Math.random() > 0.5) ? Mode.Major : Mode.Minor
+    var chordProgression = generateChordProgression(mode, 7)
+    // Continue to generate chord progressions until we
+    // find one that ends on the tonic.
+  } while (chordProgression[chordProgression.length - 1] !== 0);
+
+  return {
+    [Voice.Soprano]: generateMelody(keySignature, mode, chordProgression),
+    ...generateHarmony(keySignature, mode, chordProgression)
+  }
+}
