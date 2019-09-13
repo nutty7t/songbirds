@@ -1,0 +1,14 @@
+#White > path,
+#Black > path,
+#Logo > path,
+#Bird1,
+#Bird2,
+#Easy,
+#Hard {
+	opacity: 0;
+	transition: 1000ms all;
+}
+
+#Black > path {
+	fill: white;
+}
