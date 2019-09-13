@@ -45,6 +45,13 @@ enum Quality {
   Diminished
 }
 
+enum Voice {
+  Soprano = 0,
+  Alto,
+  Tenor,
+  Bass
+}
+
 interface Note {
   midiNumber: number
   pitchClass: PitchClass
@@ -206,26 +213,24 @@ function spellChord (key: PitchClass, mode: Mode, chord: MajorChord | MinorChord
   return spelling
 }
 
-function isSopranoRange ({ midiNumber }: Note): boolean {
-  // C4 -> G5: the graphical piano is two octaves (C4 -> C6).
-  return midiNumber >= 60 && midiNumber <= 79
+function inRange (part: Voice) {
+  return function ({ midiNumber }: Note): boolean {
+    switch (part) {
+      case Voice.Soprano:
+        // C4 -> G5: the graphical piano is two octaves (C4 -> C6).
+        return midiNumber >= 60 && midiNumber <= 79
+      case Voice.Alto:
+        // G3 -> D5
+        return midiNumber >= 55 && midiNumber <= 74
+      case Voice.Tenor:
+        // C3 -> G4
+        return midiNumber >= 48 && midiNumber <= 67
+      case Voice.Bass:
+        // E2 -> C4
+        return midiNumber >= 40 && midiNumber <= 60
+    }
+  }
 }
-
-function isAltoRange ({ midiNumber }: Note): boolean {
-  // G3 -> D5
-  return midiNumber >= 55 && midiNumber <= 74
-}
-
-function isTenorRange ({ midiNumber }: Note): boolean {
-  // C3 -> G4
-  return midiNumber >= 48 && midiNumber <= 67
-}
-
-function isBassRange ({ midiNumber }: Note): boolean {
-  // E2 -> C4
-  return midiNumber >= 40 && midiNumber <= 60
-}
-
 function isInChord (chord: Array<number>) {
   return function ({ pitchClass }: Note): boolean {
     return chord.includes(pitchClass)
@@ -254,7 +259,7 @@ function generateMelody (key: PitchClass, mode: Mode, chordProgression: Array<nu
   // Generate the first note of the melody.
   const firstChord = spellChord(key, mode, chordProgression.pop())
   const firstNoteCandidates = Object.values(notes)
-    .filter(isSopranoRange)
+    .filter(inRange(Voice.Soprano))
     .filter(isInChord(firstChord))
   const firstNote = pickRandomNote(firstNoteCandidates)
   const melody = [firstNote]
@@ -264,7 +269,7 @@ function generateMelody (key: PitchClass, mode: Mode, chordProgression: Array<nu
   while (chordProgression.length > 0) {
     const nextChord = chordProgression.pop()
     const candidates = Object.values(notes)
-      .filter(isSopranoRange)
+      .filter(inRange(Voice.Soprano))
       .filter(isInChord(spellChord(key, mode, nextChord)))
       .filter((note: Note) => {
         // No leaps greater than a perfect fourth.
@@ -353,5 +358,60 @@ function generateMelody (key: PitchClass, mode: Mode, chordProgression: Array<nu
   return embellishedMelody
 }
 
-console.log(generateMelody(PitchClass.C, Mode.Major, generateChordProgression(Mode.Major, 7)))
+function generateHarmony (key: PitchClass, mode: Mode, chordProgression: Array<number>) {
+  const partWrite = (part: Voice): Array<Note> => {
+    let index
+    switch (part) {
+      case Voice.Bass:
+        index = 0
+        break
+      case Voice.Tenor:
+        index = 1
+        break
+      case Voice.Alto:
+        index = 2
+        break
+    }
 
+    // Generate first note of voice line.
+    const chords = [...chordProgression]
+    const firstPitch = spellChord(key, mode, chords.pop())[index]
+    const firstNoteCandidates = Object.values(notes).filter(inRange(part))
+    const firstNote = pickRandomNote(firstNoteCandidates)
+    const voiceLine: Array<Note> = [firstNote]
+    const lastNote = firstNote
+
+    // Generate the rest of the notes (one per chord).
+    while (chords.length > 0) {
+      const nextChord = chords.pop()
+      const pitch = spellChord(key, mode, nextChord)[index]
+      const nextNote = Object.values(notes)
+        .filter(n => n.pitchClass === pitch)
+        .filter(inRange(part))
+        .map(n => n.midiNumber)
+        .reduce((bestNote: number, note: number) => {
+          // Attempt to get smooth voice leading in the voice line.
+          // Candidate notes with the most stepwise motion win.
+          return (Math.abs(note - lastNote.midiNumber) < Math.abs(bestNote - lastNote.midiNumber))
+            ? note
+            : bestNote
+        }, Infinity)
+      voiceLine.push(notes[nextNote])
+    }
+
+    return voiceLine
+  }
+
+  const alto: Array<Note> = partWrite(Voice.Alto)
+  const tenor: Array<Note> = partWrite(Voice.Tenor)
+  const bass: Array<Note> = partWrite(Voice.Bass)
+
+  return {
+    [Voice.Alto]: alto,
+    [Voice.Tenor]: tenor,
+    [Voice.Bass]: bass
+  }
+}
+
+console.log(generateMelody(PitchClass.C, Mode.Major, generateChordProgression(Mode.Major, 7)))
+console.log(generateHarmony(PitchClass.C, Mode.Major, generateChordProgression(Mode.Major, 7)))
