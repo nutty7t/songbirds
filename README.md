@@ -1,6 +1,8 @@
 # Songbirds
 
-> **TODO** Add a little description about this project.
+> You are a lovebird, and you are trying to attract another lovebird. In order
+> to do that, you must use your aural skills to sing back the melodies that you
+> hear.
 
 ## Development
 
