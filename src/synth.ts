@@ -1,7 +1,5 @@
 import { generateSong, Note, Voice } from './music'
 
-const song: any = generateSong()
-
 const songbirds: any = {
   [Voice.Soprano]: new AudioContext(),
   [Voice.Alto]: new AudioContext(),
@@ -22,24 +20,27 @@ function playNote (voice: string, note: Note) {
   oscillator.start(0)
 }
 
-setTimeout(() => {
+const timeouts: any = []
+export function playSong () {
+  for (var i = 0; i < timeouts.length; i++) {
+    clearTimeout(timeouts[i]);
+  }
+  const song: any = generateSong()
   Object.keys(Voice).forEach(voice => {
     song[voice].forEach((note: Note | Array<Note>, index: number) => {
       if ((note as Array<Note>).length === 2) {
-        setTimeout(() => {
+        timeouts.push(setTimeout(() => {
           playNote(voice, (note as Array<Note>)[0])
-        }, index * 1000)
+        }, index * 1000))
         // Non-Chord Tone :D
-        setTimeout(() => {
+        timeouts.push(setTimeout(() => {
           playNote(voice, (note as Array<Note>)[1])
-        }, index * 1000 + 500)
+        }, index * 1000 + 500))
       } else {
-        setTimeout(() => {
+        timeouts.push(setTimeout(() => {
           playNote(voice, note as Note)
-        }, index * 1000)
+        }, index * 1000))
       }
     })
   })
-}, 2000)
-
-console.log(song)
+}
