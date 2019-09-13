@@ -21,26 +21,27 @@ function playNote (voice: string, note: Note) {
 }
 
 const timeouts: any = []
-export function playSong () {
+export function playSong (song: any) {
   for (var i = 0; i < timeouts.length; i++) {
     clearTimeout(timeouts[i]);
   }
-  const song: any = generateSong()
-  Object.keys(Voice).forEach(voice => {
-    song[voice].forEach((note: Note | Array<Note>, index: number) => {
-      if ((note as Array<Note>).length === 2) {
-        timeouts.push(setTimeout(() => {
-          playNote(voice, (note as Array<Note>)[0])
-        }, index * 1000))
-        // Non-Chord Tone :D
-        timeouts.push(setTimeout(() => {
-          playNote(voice, (note as Array<Note>)[1])
-        }, index * 1000 + 500))
-      } else {
-        timeouts.push(setTimeout(() => {
-          playNote(voice, note as Note)
-        }, index * 1000))
-      }
+  try {
+    Object.keys(Voice).forEach(voice => {
+      song[voice].forEach((note: Note | Array<Note>, index: number) => {
+        if ((note as Array<Note>).length === 2) {
+          timeouts.push(setTimeout(() => {
+            playNote(voice, (note as Array<Note>)[0])
+          }, index * 1000))
+          // Non-Chord Tone :D
+          timeouts.push(setTimeout(() => {
+            playNote(voice, (note as Array<Note>)[1])
+          }, index * 1000 + 500))
+        } else {
+          timeouts.push(setTimeout(() => {
+            playNote(voice, note as Note)
+          }, index * 1000))
+        }
+      })
     })
-  })
+  } catch (error) {}
 }

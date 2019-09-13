@@ -12,3 +12,16 @@
 #Black > path {
 	fill: white;
 }
+
+#Easy:hover,
+#Hard:hover {
+	cursor: pointer;
+	fill: blue;
+	transition: 200ms all;
+}
+
+#White > path:hover,
+#Black > path:hover {
+	cursor: pointer;
+	fill: lightblue !important;
+}
