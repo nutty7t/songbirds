@@ -5,6 +5,7 @@ FILESIZE_LIMIT=13312 # bytes
 
 if [ -f "${SUBMISSION_FILE}" ]; then
   SUBMISSION_FILESIZE=$(wc -c < "${SUBMISSION_FILE}")
+  echo "submission.zip :: (${SUBMISSION_FILESIZE}/${FILESIZE_LIMIT}) bytes"
   if [ "${SUBMISSION_FILESIZE}" -le "${FILESIZE_LIMIT}" ]; then
     echo "Songbirds is under 13K! \( ﾟヮﾟ)/"
   else
