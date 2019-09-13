@@ -113,73 +113,73 @@ function generateChordProgression(mode: Mode, n: number): Array<number> {
   return chordProgression
 }
 
+const majorChords: any = {
+  [MajorChord.I]: {
+    interval: 0,
+    quality: Quality.Major
+  },
+  [MajorChord.ii]: {
+    interval: 2,
+    quality: Quality.Minor
+  },
+  [MajorChord.iii]: {
+    interval: 4,
+    quality: Quality.Minor
+  },
+  [MajorChord.IV]: {
+    interval: 5,
+    quality: Quality.Major
+  },
+  [MajorChord.V]: {
+    interval: 7,
+    quality: Quality.Major
+  },
+  [MajorChord.vi]: {
+    interval: 9,
+    quality: Quality.Minor
+  },
+  [MajorChord.vii]: {
+    interval: 11,
+    quality: Quality.Diminished
+  }
+}
+
+const minorChords: any = {
+  [MinorChord.i]: {
+    interval: 0,
+    quality: Quality.Minor
+  },
+  [MinorChord.ii]: {
+    interval: 2,
+    quality: Quality.Diminished
+  },
+  [MinorChord.III]: {
+    interval: 3,
+    quality: Quality.Major
+  },
+  [MinorChord.iv]: {
+    interval: 5,
+    quality: Quality.Minor
+  },
+  [MinorChord.V]: {
+    interval: 7,
+    quality: Quality.Major
+  },
+  [MinorChord.VI]: {
+    interval: 8,
+    quality: Quality.Major
+  },
+  [MinorChord.VII]: {
+    interval: 10,
+    quality: Quality.Major
+  },
+  [MinorChord.vii]: {
+    interval: 11,
+    quality: Quality.Diminished
+  }
+}
+
 function spellChord (key: PitchClass, mode: Mode, chord: MajorChord | MinorChord): Array<PitchClass> {
-  const majorChords: any = {
-    [MajorChord.I]: {
-      interval: 0,
-      quality: Quality.Major
-    },
-    [MajorChord.ii]: {
-      interval: 2,
-      quality: Quality.Minor
-    },
-    [MajorChord.iii]: {
-      interval: 4,
-      quality: Quality.Minor
-    },
-    [MajorChord.IV]: {
-      interval: 5,
-      quality: Quality.Major
-    },
-    [MajorChord.V]: {
-      interval: 7,
-      quality: Quality.Major
-    },
-    [MajorChord.vi]: {
-      interval: 9,
-      quality: Quality.Minor
-    },
-    [MajorChord.vii]: {
-      interval: 11,
-      quality: Quality.Diminished
-    }
-  }
-
-  const minorChords: any = {
-    [MinorChord.i]: {
-      interval: 0,
-      quality: Quality.Minor
-    },
-    [MinorChord.ii]: {
-      interval: 2,
-      quality: Quality.Diminished
-    },
-    [MinorChord.III]: {
-      interval: 3,
-      quality: Quality.Major
-    },
-    [MinorChord.iv]: {
-      interval: 5,
-      quality: Quality.Minor
-    },
-    [MinorChord.V]: {
-      interval: 7,
-      quality: Quality.Major
-    },
-    [MinorChord.VI]: {
-      interval: 8,
-      quality: Quality.Major
-    },
-    [MinorChord.VII]: {
-      interval: 10,
-      quality: Quality.Major
-    },
-    [MinorChord.vii]: {
-      interval: 11,
-      quality: Quality.Diminished
-    }
-  }
-
   const { interval, quality } = (mode === Mode.Major)
     ? majorChords[chord]
     : minorChords[chord]
@@ -229,6 +229,19 @@ function isBassRange ({ midiNumber }: Note): boolean {
 function isInChord (chord: Array<number>) {
   return function ({ pitchClass }: Note): boolean {
     return chord.includes(pitchClass)
+  }
+}
+
+function isInKey (key: PitchClass, mode: Mode) {
+  return function ({ pitchClass }: Note): boolean {
+    const chords = (mode === Mode.Major)
+      ? majorChords
+      : minorChords
+    const scale = Object
+      .values(chords)
+      .map(c => (c as any).interval)
+      .map(i => (key + i) % 12)
+    return scale.includes(pitchClass)
   }
 }
 
