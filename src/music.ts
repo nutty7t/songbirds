@@ -45,14 +45,14 @@ enum Quality {
   Diminished
 }
 
-enum Voice {
+export enum Voice {
   Soprano = 0,
   Alto,
   Tenor,
   Bass
 }
 
-interface Note {
+export interface Note {
   midiNumber: number
   pitchClass: PitchClass
   frequency: number /* Hz */
@@ -320,7 +320,7 @@ function generateMelody (key: PitchClass, mode: Mode, chordProgression: Array<nu
       ? notes[curr.midiNumber - 1]
       : notes[curr.midiNumber - 2]
 
-    if (Math.random() >= 0.5) {
+    if (Math.random() >= 0.3) {
       const interval = Math.abs(curr.midiNumber - next.midiNumber)
       // Perfect Unison
       if (interval === 0) {
