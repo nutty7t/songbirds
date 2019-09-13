@@ -250,7 +250,7 @@ function pickRandomNote (notes: Array<Note>): Note {
   return notes[randomIndex]
 }
 
-function generateMelody (key: PitchClass, mode: Mode, chordProgression: Array<number>): Array<Note> {
+function generateMelody (key: PitchClass, mode: Mode, chordProgression: Array<number>): Array<Note | Array<Note>> {
   // Generate the first note of the melody.
   const firstChord = spellChord(key, mode, chordProgression.pop())
   const firstNoteCandidates = Object.values(notes)
@@ -273,7 +273,84 @@ function generateMelody (key: PitchClass, mode: Mode, chordProgression: Array<nu
     melody.push(pickRandomNote(candidates))
   }
 
-  return melody
+  // Embellish the melody with non-chord tones.
+  const embellishedMelody: Array<Note | Array<Note>> = []
+  const slidingMelody = melody
+    .slice(0, -1)
+    .map((note, index) => {
+      return [
+        note,
+        melody.slice(1)[index]
+      ]
+    })
+
+  // --------------------------
+  //  Ornamentation Flow Chart
+  // --------------------------
+  //
+  // For the sake of time, we're only going to consider the addition of
+  // unaccented non-chord tones (so no suspensions or retardations T.T).
+  // Forgive the spaghetti! I procrastinated on this too long... there's
+  // only a few hours left!
+  //
+  //                    +--------+     +---------------+
+  //                +-> | Unison | +-> | Neighbor Tone |
+  //                |   +--------+     +---------------+     +--------------+
+  //                |                                    +-> | Anticipation |
+  // +------------+ |   +--------+                       |   +--------------+
+  // | Embellish? | +-> | Second | +---------------------+
+  // +------------+ |   +--------+                       |   +-------------+
+  //                |                                    +-> | Escape Tone |
+  //                |   +-------+      +--------------+      +-------------+
+  //                +-> | Third | +--> | Passing Tone |
+  //                    +-------+      +--------------+
+  //
+  slidingMelody.forEach(([curr, next]) => {
+    const testNote = isInKey(key, mode)
+    const currStepUp = testNote(notes[curr.midiNumber + 1])
+      ? notes[curr.midiNumber + 1]
+      : notes[curr.midiNumber + 2]
+    const currStepDown = testNote(notes[curr.midiNumber - 1])
+      ? notes[curr.midiNumber - 1]
+      : notes[curr.midiNumber - 2]
+
+    if (Math.random() >= 0.5) {
+      const interval = Math.abs(curr.midiNumber - next.midiNumber)
+      // Perfect Unison
+      if (interval === 0) {
+        // Do we want to go up or down?
+        if (Math.random() >= 0.5) {
+          embellishedMelody.push([curr, currStepUp])
+        } else {
+          embellishedMelody.push([curr, currStepDown])
+        }
+      // (Minor | Major) Second
+      } else if (interval === 1 || interval === 2) {
+        if (Math.random() >= 0.5) {
+          embellishedMelody.push([curr, currStepUp])
+        } else {
+          embellishedMelody.push([curr, currStepDown])
+        }
+      // (Minor | Major) Third
+      } else if (interval === 3 || interval === 4) {
+        // Passing Tone
+        if (next.midiNumber - curr.midiNumber > 0) {
+          embellishedMelody.push([curr, currStepUp])
+        } else {
+          embellishedMelody.push([curr, currStepDown])
+        }
+      } else {
+        // We can't embellish this interval.
+        embellishedMelody.push(curr)
+      }
+    } else {
+      // Don't embellish the current note.
+      embellishedMelody.push(curr)
+    }
+  })
+  embellishedMelody.push(melody[melody.length - 1])
+
+  return embellishedMelody
 }
 
 console.log(generateMelody(PitchClass.C, Mode.Major, generateChordProgression(Mode.Major, 7)))
