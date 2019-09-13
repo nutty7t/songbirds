@@ -377,7 +377,9 @@ function generateHarmony (key: PitchClass, mode: Mode, chordProgression: Array<n
     // Generate first note of voice line.
     const chords = [...chordProgression]
     const firstPitch = spellChord(key, mode, chords.pop())[index]
-    const firstNoteCandidates = Object.values(notes).filter(inRange(part))
+    const firstNoteCandidates = Object.values(notes)
+      .filter(n => n.pitchClass === firstPitch)
+      .filter(inRange(part))
     const firstNote = pickRandomNote(firstNoteCandidates)
     const voiceLine: Array<Note> = [firstNote]
     const lastNote = firstNote
